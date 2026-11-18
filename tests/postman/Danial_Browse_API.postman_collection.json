@@ -1,0 +1,974 @@
+{
+  "info": {
+    "name": "Danial - Browse API (Sprint 1)",
+    "description": "Section 6.3. Run the folders in order. Needs the seed data (Section 8) and Ali's login + POST /events endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 - Login (saves tokens)",
+      "item": [
+        {
+          "name": "Login as student.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"studentToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as dss.organiser.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"organiserToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dss.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as oss.approver.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"approverToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"oss.approver.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as admin.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"adminToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 - Look up ids (organisations, venue)",
+      "item": [
+        {
+          "name": "Find Data Science Society id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"Data Science Society\"); pm.test(\"Data Science Society exists (run the seed script)\", () => pm.expect(o).to.exist); pm.environment.set(\"dssId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=society"
+          }
+        },
+        {
+          "name": "Find SMCS id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"SMCS\"); pm.test(\"SMCS exists\", () => pm.expect(o).to.exist); pm.environment.set(\"smcsId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=school"
+          }
+        },
+        {
+          "name": "Find SBS id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"SBS\"); pm.test(\"SBS exists\", () => pm.expect(o).to.exist); pm.environment.set(\"sbsId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=school"
+          }
+        },
+        {
+          "name": "Find Auditorium 1 id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json().find(x => x.name === \"Auditorium 1\"); pm.test(\"Auditorium 1 exists\", () => pm.expect(v).to.exist); pm.environment.set(\"venueId\", v.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/venues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Setup: organiser creates a PENDING event (Ali's endpoint)",
+      "item": [
+        {
+          "name": "Create pending event",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"pendingEventId\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssId}}\",\n  \"title\": \"Postman browse check\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Workshop\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Categories and organisations",
+      "item": [
+        {
+          "name": "GET /categories (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Three categories in order\", () => pm.expect(b.map(c => c.key)).to.eql([\"society\", \"school\", \"department\"]));",
+                  "pm.test(\"Labels and counts present\", () => { pm.expect(b.map(c => c.label)).to.eql([\"Societies\", \"Schools\", \"Departments\"]); b.forEach(c => pm.expect(c.organisationCount).to.be.a(\"number\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/categories"
+          }
+        },
+        {
+          "name": "GET /categories without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categories"
+          }
+        },
+        {
+          "name": "GET /organisations?category=society",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Sorted A to Z\", () => { const n = b.map(o => o.name); pm.expect(n).to.eql([...n].sort((a, c) => a.localeCompare(c, \"en\", { sensitivity: \"base\" }))); });",
+                  "pm.test(\"Each has id, name, category, upcomingCount\", () => b.forEach(o => { pm.expect(o.id).to.be.a(\"string\"); pm.expect(o.category).to.eql(\"society\"); pm.expect(o.upcomingCount).to.be.a(\"number\"); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=society"
+          }
+        },
+        {
+          "name": "GET /organisations without category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations"
+          }
+        },
+        {
+          "name": "GET /organisations with a wrong category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=club"
+          }
+        },
+        {
+          "name": "GET /organisations/:id (student: no approvers)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); pm.test(\"Has name and description\", () => { pm.expect(b.name).to.eql(\"Data Science Society\"); pm.expect(b).to.have.property(\"description\"); });",
+                  "pm.test(\"Student does not get approvers\", () => pm.expect(b).to.not.have.property(\"approvers\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}"
+          }
+        },
+        {
+          "name": "GET /organisations/:id (organiser: approvers)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Organiser gets approver names\", () => { const a = pm.response.json().approvers; pm.expect(a).to.be.an(\"array\").that.is.not.empty; pm.expect(a[0]).to.have.property(\"fullName\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}"
+          }
+        },
+        {
+          "name": "GET /organisations/:id with an unknown id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error code is NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"NOT_FOUND\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/000000000000000000000000"
+          }
+        },
+        {
+          "name": "GET /organisations/:id with a malformed id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/abc"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Organisation events and visibility (FR-BRW-04, 06, 07)",
+      "item": [
+        {
+          "name": "Upcoming events (student): only approved or cancelled-after-approval, soonest first",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Students never see Pending, Rejected or Changes Requested\", () => b.forEach(e => pm.expect([\"APPROVED\", \"CANCELLED\"]).to.include(e.status)));",
+                  "pm.test(\"Cancelled events shown only if cancelled after approval\", () => b.filter(e => e.status === \"CANCELLED\").forEach(e => pm.expect(e.cancelledAfterApproval).to.eql(true)));",
+                  "pm.test(\"The pending event from setup is not listed\", () => pm.expect(b.map(e => e.id)).to.not.include(pm.environment.get(\"pendingEventId\")));",
+                  "pm.test(\"Soonest first\", () => { const t = b.map(e => e.startAt); pm.expect(t).to.eql([...t].sort()); });",
+                  "if (b.length) pm.environment.set(\"approvedEventId\", b[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}/events?when=upcoming"
+          }
+        },
+        {
+          "name": "Past events (student): most recent first",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); pm.test(\"Most recent first\", () => { const t = b.map(e => e.startAt); pm.expect(t).to.eql([...t].sort().reverse()); });",
+                  "pm.test(\"All have ended\", () => b.forEach(e => pm.expect(new Date(e.endAt).getTime()).to.be.below(Date.now())));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}/events?when=past"
+          }
+        },
+        {
+          "name": "Upcoming events (organiser): also sees own Pending event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pending event is listed for the organiser\", () => pm.expect(pm.response.json().map(e => e.id)).to.include(pm.environment.get(\"pendingEventId\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}/events?when=upcoming"
+          }
+        },
+        {
+          "name": "when=bogus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}/events?when=soon"
+          }
+        },
+        {
+          "name": "Organisation with no events returns an empty list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Is an array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{smcsId}}/events?when=past"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Event details",
+      "item": [
+        {
+          "name": "Student cannot open a Pending event (404, not 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error code is NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"NOT_FOUND\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{pendingEventId}}"
+          }
+        },
+        {
+          "name": "Organiser opens own Pending event with history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const e = pm.response.json();",
+                  "pm.test(\"Has the contract fields\", () => [\"id\", \"organisationName\", \"category\", \"title\", \"eventType\", \"startAt\", \"endAt\", \"venue\", \"capacity\", \"status\", \"createdBy\"].forEach(k => pm.expect(e).to.have.property(k)));",
+                  "pm.test(\"Status PENDING and first history entry is the submission\", () => { pm.expect(e.status).to.eql(\"PENDING\"); pm.expect(e.history[0].toStatus).to.eql(\"PENDING\"); pm.expect(e.history[0].actorRole).to.eql(\"organiser\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{pendingEventId}}"
+          }
+        },
+        {
+          "name": "Admin opens the Pending event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{pendingEventId}}"
+          }
+        },
+        {
+          "name": "Approver of that organisation opens the Pending event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{pendingEventId}}"
+          }
+        },
+        {
+          "name": "Unknown event id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/000000000000000000000000"
+          }
+        },
+        {
+          "name": "Malformed event id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/not-an-id"
+          }
+        },
+        {
+          "name": "Approved event (student): no history, capacity shown",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"approvedEventId\")) { console.warn(\"No approved event yet: approve one (see the Approvals collection) and re-run this request.\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get(\"approvedEventId\")) {",
+                  "  pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "  const e = pm.response.json();",
+                  "  pm.test(\"Student gets no history\", () => pm.expect(e).to.not.have.property(\"history\"));",
+                  "  pm.test(\"Capacity is shown\", () => pm.expect(e.capacity).to.be.a(\"number\"));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{approvedEventId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - Venues and event types",
+      "item": [
+        {
+          "name": "GET /venues",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); pm.test(\"Venues have id, name, capacity\", () => { pm.expect(b).to.be.an(\"array\").that.is.not.empty; b.forEach(v => { pm.expect(v.id).to.be.a(\"string\"); pm.expect(v.capacity).to.be.a(\"number\"); }); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/venues"
+          }
+        },
+        {
+          "name": "GET /settings/event-types?category=society",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Plain list of names\", () => { const b = pm.response.json(); pm.expect(b).to.be.an(\"array\").that.is.not.empty; pm.expect(b[0]).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/settings/event-types?category=society"
+          }
+        },
+        {
+          "name": "GET /settings/event-types?category=school",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contains Thesis Defence\", () => pm.expect(pm.response.json()).to.include(\"Thesis Defence\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/settings/event-types?category=school"
+          }
+        },
+        {
+          "name": "GET /settings/event-types without category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/settings/event-types"
+          }
+        }
+      ]
+    }
+  ]
+}
