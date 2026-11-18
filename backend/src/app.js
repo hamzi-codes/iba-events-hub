@@ -21,6 +21,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', eventsRoutes); 
 app.use('/api/v1', browseRoutes);
