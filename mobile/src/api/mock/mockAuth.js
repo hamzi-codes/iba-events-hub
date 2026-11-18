@@ -1,5 +1,6 @@
 import { ApiError } from '../ApiError';
 import { getToken } from '../tokenStorage';
+import { ORGS } from './mockData';
 import { delay } from './mockUtils';
 
 // Sample data and rules for the auth endpoints (Master Document 6.2), used while
@@ -23,16 +24,6 @@ const MOCK_CODE = '123456';
 const EXPIRED_CODE = '000000';
 const ALLOWED_DOMAINS = ['iba.edu.pk', 'khi.iba.edu.pk'];
 
-const org = (id, name, category) => ({ id, name, category });
-const ORGS = {
-  dss: org('org-dss', 'Data Science Society', 'society'),
-  ess: org('org-ess', 'Entrepreneurship Society', 'society'),
-  pss: org('org-pss', 'Public Speaking Society', 'society'),
-  dram: org('org-dram', 'Dramatics Society', 'society'),
-  smcs: org('org-smcs', 'SMCS', 'school'),
-  sbs: org('org-sbs', 'SBS', 'school'),
-  cedir: org('org-cedir', 'CEDIR', 'department'),
-};
 const link = (o, type) => ({
   organisationId: o.id,
   organisationName: o.name,
@@ -177,6 +168,14 @@ export async function login({ email, password }) {
     throw new ApiError({ status: 403, code: 'ACCOUNT_DEACTIVATED', message: 'This account is not active. Contact your system administrator.' });
   }
   return { token: tokenFor(user), user: publicUser(user) };
+}
+
+// The signed-in user for the other mock files, so they can apply role rules.
+export async function getCurrentUser() {
+  const token = await getToken();
+  const user = token && users.find((u) => tokenFor(u) === token);
+  if (!user) throw new ApiError({ status: 401, code: 'UNAUTHENTICATED', message: 'Please log in again.' });
+  return publicUser(user);
 }
 
 export async function getMe() {
