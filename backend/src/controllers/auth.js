@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const env = require('../config/env');
 const User = require('../models/User');
 require('../models/Organisation');
-const Settings = require('../models/Settings');
+const Setting = require('../models/Setting');
 const { ApiError, asyncHandler } = require('../middleware/errorHandler');
 const { signToken } = require('../middleware/auth');
 const { sendVerificationCode } = require('../services/email');
@@ -46,7 +46,7 @@ async function newCode() {
 }
 
 async function allowedDomains() {
-  const setting = await Settings.findOne();
+  const setting = await Setting.findOne();
   return setting && setting.allowedEmailDomains.length
     ? setting.allowedEmailDomains.map((d) => d.toLowerCase())
     : DEFAULT_DOMAINS;
