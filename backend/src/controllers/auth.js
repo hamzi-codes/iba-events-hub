@@ -113,8 +113,12 @@ const signup = asyncHandler(async (req, res) => {
     throw err;
   }
 
+  // Fallback D6: verification switched off, so the account is ready to use
   if (!verificationOn) {
-    return res.status(201).json({ message: 'Account created. You can log in now.' });
+    return res.status(201).json({
+      message: 'Account created. You can log in now.',
+      verificationRequired: false,
+    });
   }
 
   try {
@@ -123,10 +127,12 @@ const signup = asyncHandler(async (req, res) => {
     console.error('Could not send verification email:', err.message);
     return res.status(201).json({
       message: 'Account created, but we could not send the code. Tap Resend on the next screen.',
+      verificationRequired: true,
     });
   }
   return res.status(201).json({
     message: 'Account created. We sent a 6-digit code to your email. Enter it to verify.',
+    verificationRequired: true,
   });
 });
 
