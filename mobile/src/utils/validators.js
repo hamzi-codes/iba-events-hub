@@ -39,3 +39,11 @@ export function validateSignUp({ fullName, email, password, confirmPassword }) {
 
   return errors;
 }
+
+// Verify email: exactly 6 digits (AUT-02).
+export function validateCode(code) {
+  const value = String(code || '').trim();
+  if (!value) return 'Enter the 6-digit code from your email.';
+  if (!/^\d{6}$/.test(value)) return 'The code has 6 digits. Check your email and try again.';
+  return null;
+}

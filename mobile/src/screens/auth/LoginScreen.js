@@ -20,10 +20,11 @@ const MESSAGES = {
   ACCOUNT_DEACTIVATED: 'This account is not active. Contact your system administrator.',
 };
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, route }) {
   const { login } = useAuth();
   const passwordRef = useRef(null);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route?.params?.email || '');
+  const verified = !!route?.params?.verified;
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
@@ -59,6 +60,11 @@ export default function LoginScreen({ navigation }) {
       </Text>
       <LogoPlaceholder />
       <View style={styles.form} />
+      <ErrorBanner
+        tone="info"
+        message={verified && !formError ? 'Your email is verified. Log in to continue.' : null}
+        testID="login-verified"
+      />
       <ErrorBanner message={formError} testID="login-error" />
       <FormField
         label="Email"
