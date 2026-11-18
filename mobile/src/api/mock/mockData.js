@@ -162,6 +162,49 @@ export const events = [
     startAt: at(-30, 10), endAt: at(-30, 15),
     venueId: 'v-b12', capacity: 100,
   }),
+  // Pending events for the approver screens (queue, decisions, errors). Oldest submitted first.
+  e('ev-13', 'ess', 'u-multi', {
+    title: 'Founders Fireside Chat', eventType: 'Guest Speaker Session',
+    description: 'A relaxed evening with two startup founders.',
+    startAt: at(7, 15), endAt: at(7, 17), venueId: 'v-sem2', capacity: 50, status: 'PENDING', createdAt: at(-3, 10),
+    speakerName: 'Mr. Bilal Sheikh', speakerDesignation: 'Founder, Karachi Labs',
+  }),
+  e('ev-14', 'pss', 'u-multi', {
+    title: 'Inter-Society Debate Night', eventType: 'Session',
+    description: 'Teams from four societies debate one motion.',
+    startAt: at(11, 18), endAt: at(11, 20), venueId: 'v-b12', capacity: 100, status: 'PENDING', createdAt: at(-6, 12), registrationRequired: true,
+  }),
+  e('ev-15', 'dram', 'u-multi', {
+    title: 'Drama Auditions', eventType: 'Other',
+    description: 'Open auditions for this term\'s stage play.',
+    startAt: at(13, 16), endAt: at(13, 18), venueId: 'v-lawn', capacity: 80, status: 'PENDING', createdAt: at(-4, 9),
+  }),
+  e('ev-16', 'smcs', 'u-smcs', {
+    title: 'PhD Presentation: Federated Learning', eventType: 'PhD Presentation',
+    description: 'Progress presentation of a PhD student.',
+    startAt: at(9, 10), endAt: at(9, 11), venueId: 'v-lab3', capacity: 30, status: 'PENDING', createdAt: at(-2, 14),
+    presenterName: 'Usman Tariq', thesisTitle: 'Federated Learning on Edge Devices', supervisorName: 'Dr. Sana Mir',
+  }),
+  e('ev-17', 'cedir', 'u-cedir', {
+    title: 'Interview Skills Workshop', eventType: 'Workshop',
+    description: 'Mock interviews and feedback for final year students.',
+    startAt: at(15, 10), endAt: at(15, 13), venueId: 'v-b12', capacity: 60, status: 'PENDING', createdAt: at(-1, 11),
+  }),
+  e('ev-18', 'sbs', 'u-dual', {
+    title: 'Business Plan Clinic', eventType: 'Workshop',
+    description: 'Created by the dual-role test account, so that account cannot approve it (D4).',
+    startAt: at(16, 14), endAt: at(16, 16), venueId: 'v-sem2', capacity: 40, status: 'PENDING', createdAt: at(-5, 15),
+  }),
+  e('ev-19', 'sbs', 'u-multi', {
+    title: 'Finance Seminar', eventType: 'Session',
+    description: 'A seminar on corporate finance careers.',
+    startAt: at(17, 11), endAt: at(17, 12), venueId: 'v-sem2', capacity: 40, status: 'PENDING', createdAt: at(-4, 16),
+  }),
+  e('ev-20', 'ess', 'u-multi', {
+    title: 'Pitch Practice Session', eventType: 'Session',
+    description: 'Start time has passed, so Approve is refused (EVENT_ALREADY_STARTED). Use it to see that message.',
+    startAt: at(-1, 9), endAt: at(-1, 23), venueId: 'v-b12', capacity: 30, status: 'PENDING', createdAt: at(-8, 9),
+  }),
 ];
 
 // Starting history for each event (FR-APR-08). Later screens add to these lists.
@@ -169,7 +212,7 @@ const person = (id, fullName) => ({ id, fullName });
 function startingHistory(ev) {
   const maker = person(ev.createdBy, CREATORS[ev.createdBy] || 'Organiser');
   const entries = [
-    { fromStatus: null, toStatus: 'PENDING', actor: maker, actorRole: 'organiser', comment: '', createdAt: at(-13, 11) },
+    { fromStatus: null, toStatus: 'PENDING', actor: maker, actorRole: 'organiser', comment: '', createdAt: ev.createdAt },
   ];
   const approver = person('u-oss', 'OSS Approver');
   if (ev.status === 'APPROVED' || (ev.status === 'CANCELLED' && ev.cancelledAfterApproval)) {

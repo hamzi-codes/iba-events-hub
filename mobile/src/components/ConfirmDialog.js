@@ -13,6 +13,7 @@ export default function ConfirmDialog({
   message,
   reasonLabel,
   reasonPlaceholder,
+  tooShortMessage,
   minLength = 0,
   confirmLabel = 'Confirm',
   cancelLabel = 'Keep it',
@@ -66,7 +67,7 @@ export default function ConfirmDialog({
               />
               {tooShort ? (
                 <HelperText type="error" visible testID="confirm-reason-error">
-                  Enter a reason of at least {minLength} characters. Students will see that the event was cancelled.
+                  {tooShortMessage || `Enter a reason of at least ${minLength} characters. Students will see that the event was cancelled.`}
                 </HelperText>
               ) : null}
             </>

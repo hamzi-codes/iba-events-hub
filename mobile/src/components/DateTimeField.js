@@ -30,12 +30,12 @@ function fromPickerDate(mode, date) {
     : `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export default function DateTimeField({ label, mode, value, onChange, error, placeholder, minDate, testID }) {
+export default function DateTimeField({ label, mode, value, onChange, error, placeholder, minDate, allowPast, testID }) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(null); // iPhone: value chosen but not confirmed yet
   const shown = value ? (mode === 'date' ? formatDateString(value) : formatTimeString(value)) : null;
-  const min = minDate || (mode === 'date' ? todayString() : undefined);
+  const min = minDate || (mode === 'date' && !allowPast ? todayString() : undefined);
 
   const boxStyle = [
     styles.box,
@@ -84,7 +84,7 @@ export default function DateTimeField({ label, mode, value, onChange, error, pla
             value={toPickerDate(mode, value)}
             mode={mode}
             is24Hour={false}
-            minimumDate={mode === 'date' ? toPickerDate('date', min) : undefined}
+            minimumDate={mode === 'date' && min ? toPickerDate('date', min) : undefined}
             onChange={onNativeChange}
           />
         ) : null}
@@ -97,7 +97,7 @@ export default function DateTimeField({ label, mode, value, onChange, error, pla
                   value={toPickerDate(mode, draft || value)}
                   mode={mode}
                   display="spinner"
-                  minimumDate={mode === 'date' ? toPickerDate('date', min) : undefined}
+                  minimumDate={mode === 'date' && min ? toPickerDate('date', min) : undefined}
                   onChange={onNativeChange}
                 />
               </Dialog.Content>
