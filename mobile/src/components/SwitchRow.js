@@ -3,14 +3,14 @@ import { StyleSheet, View } from 'react-native';
 import { Switch, Text } from 'react-native-paper';
 
 // A yes/no choice as a switch, with an optional line of help text under the label.
-export default function SwitchRow({ label, hint, value, onValueChange, testID }) {
+export default function SwitchRow({ label, hint, value, onValueChange, disabled, testID }) {
   return (
     <View style={styles.row}>
       <View style={styles.text}>
         <Text style={styles.label}>{label}</Text>
         {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       </View>
-      <Switch value={value} onValueChange={onValueChange} accessibilityLabel={label} testID={testID} />
+      <Switch value={value} onValueChange={onValueChange} disabled={disabled} accessibilityLabel={label} testID={testID} />
     </View>
   );
 }

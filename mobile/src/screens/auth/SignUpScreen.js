@@ -130,7 +130,7 @@ export default function SignUpScreen({ navigation }) {
         </Button>
         <Button
           mode="text"
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.popTo('Login')}
           disabled={submitting}
           style={styles.link}
           testID="signup-to-login"

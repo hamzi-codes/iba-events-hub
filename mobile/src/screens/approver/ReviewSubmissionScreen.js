@@ -79,7 +79,7 @@ export default function ReviewSubmissionScreen({ navigation, route }) {
       await config.call(eventId, { comment });
       const message = config.done(event.title);
       setSheet(null);
-      navigation.navigate('PendingQueue', { notice: message });
+      navigation.popTo('PendingQueue', { notice: message });
     } catch (e) {
       if (BLOCKING_CODES.includes(e.code)) {
         setSheet(null);

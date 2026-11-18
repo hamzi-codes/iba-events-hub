@@ -1,7 +1,6 @@
 import { ApiError } from '../ApiError';
-import { getCurrentUser } from './mockAuth';
+import { getAllUsers, getCurrentUser } from './mockAuth';
 import {
-  APPROVER_NAMES,
   CATEGORIES,
   ORG_LIST,
   canSeeEvent,
@@ -53,7 +52,9 @@ export async function getOrganisation(id) {
   // Organisers, approvers and admins also get the approver names (Section 7.3, screen 12).
   const user = await getCurrentUser();
   if (user.roles.some((role) => ['organiser', 'approver', 'admin'].includes(role))) {
-    result.approvers = (APPROVER_NAMES[organisation.id] || []).map((fullName) => ({ fullName }));
+    result.approvers = getAllUsers()
+      .filter((u) => u.isActive && u.affiliations.some((a) => a.organisationId === organisation.id && a.type === 'approver'))
+      .map((u) => ({ fullName: u.fullName }));
   }
   return result;
 }

@@ -39,7 +39,7 @@ export default function VerifyEmailScreen({ navigation, route }) {
     try {
       await verifyEmail({ email, code });
       setVerifying(false);
-      navigation.navigate('Login', { verified: true, email });
+      navigation.popTo('Login', { verified: true, email });
     } catch (error) {
       setVerifying(false);
       // The typed code stays in the box (NFR-REL-03).
@@ -66,9 +66,9 @@ export default function VerifyEmailScreen({ navigation, route }) {
 
   if (!email) {
     return (
-      <AuthLayout headerTitle="Verify your email" onBack={() => navigation.navigate('Login')}>
+      <AuthLayout headerTitle="Verify your email" onBack={() => navigation.popTo('Login')}>
         <ErrorBanner message="We lost track of which email to verify. Go back to log in and try again." />
-        <Button mode="contained" onPress={() => navigation.navigate('Login')}>
+        <Button mode="contained" onPress={() => navigation.popTo('Login')}>
           Back to log in
         </Button>
       </AuthLayout>

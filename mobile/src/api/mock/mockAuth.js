@@ -170,6 +170,9 @@ export async function login({ email, password }) {
   return { token: tokenFor(user), user: publicUser(user) };
 }
 
+// The full user list, for the admin mock (it edits roles, links and status).
+export const getAllUsers = () => users;
+
 // The signed-in user for the other mock files, so they can apply role rules.
 export async function getCurrentUser() {
   const token = await getToken();
