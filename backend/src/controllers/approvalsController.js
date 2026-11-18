@@ -4,9 +4,10 @@ const { ApiError } = require('../middleware/errorHandler');
 const { hasAffiliation, affiliatedOrgIds } = require('../middleware/roles');
 const { EVENT_POPULATE, serializeEvent } = require('../utils/serializers');
 const { loadHistory } = require('../utils/eventQueries');
+const { findConflict } = require('../services/conflict');
+const { formatDate, formatTime } = require('../services/eventRules');
 
 const DECISIONS = ['APPROVED', 'REJECTED', 'CHANGES_REQUESTED'];
-const BLOCKING_STATUSES = ['PENDING', 'CHANGES_REQUESTED', 'APPROVED']; // decision D1
 const MIN_COMMENT = 10;
 const MAX_COMMENT = 1000;
 const NOT_FOUND = () => new ApiError(404, 'NOT_FOUND', 'This event could not be found.');
@@ -27,24 +28,16 @@ function parseDateParam(value, name, endOfDay) {
   return dateOnly && endOfDay ? new Date(d.getTime() + 24 * 3600e3 - 1) : d;
 }
 
-const timeFmt = (d) =>
-  d.toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour: 'numeric', minute: '2-digit', hour12: true });
-const dateFmt = (d) =>
-  d.toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi', day: 'numeric', month: 'short', year: 'numeric' });
 
-// Safety re-check just before approval (FR-CNF-05). Same rule as Section 5.10.
-// TODO: when services/conflict.js from Ali is merged, call it here instead of this copy.
+// Safety re-check just before approval (FR-CNF-05). Uses the shared rule in services/conflict.js.
 async function findClash(event) {
-  if (event.isOnline || !event.venueId) return null; // online events never conflict
-  return Event.findOne({
-    venueId: event.venueId._id || event.venueId,
-    status: { $in: BLOCKING_STATUSES },
-    startAt: { $lt: event.endAt },
-    endAt: { $gt: event.startAt },
-    _id: { $ne: event._id },
-  }).populate('organisationId', 'name');
+  return findConflict({
+    venueId: event.isOnline ? null : event.venueId && (event.venueId._id || event.venueId),
+    startAt: event.startAt,
+    endAt: event.endAt,
+    excludeEventId: event._id,
+  });
 }
-
 function readComment(body, required) {
   const raw = body && body.comment;
   if (raw !== undefined && raw !== null && typeof raw !== 'string') {
@@ -171,7 +164,7 @@ async function decide(req, res, opts) {
         409,
         'VENUE_CONFLICT',
         `This venue is already booked for ${clash.title} (${clash.organisationId.name}) from ` +
-          `${timeFmt(clash.startAt)} to ${timeFmt(clash.endAt)} on ${dateFmt(clash.startAt)}. ` +
+          `${formatTime(clash.startAt)} to ${formatTime(clash.endAt)} on ${formatDate(clash.startAt)}. ` +
           'The event cannot be approved while this clash exists.'
       );
     }
