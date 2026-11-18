@@ -238,3 +238,21 @@ export function toEventObject(ev, { withHistory = false } = {}) {
 
 export const upcomingCountFor = (organisationId) =>
   events.filter((ev) => ev.organisationId === organisationId && ev.status === 'APPROVED' && isUpcoming(ev.endAt)).length;
+
+// ---- Data for the event form and approvals (Master Document 5.9, 8.2) ----
+export const EVENT_TYPES = {
+  society: ['Flagship Event', 'Session', 'Workshop', 'Guest Speaker Session', 'Other'],
+  school: ['Thesis Defence', 'PhD Presentation', 'Faculty Research Presentation', 'Faculty Talk', 'Training Bootcamp', 'Other'],
+  department: ['Session', 'Workshop', 'Interview', 'Book Launch', 'Other'],
+};
+
+// Who approves for each organisation (used for the "Goes to" line on the review screen).
+export const APPROVER_NAMES = {
+  'org-dss': ['OSS Approver', 'OSS Approver Two'],
+  'org-ess': ['OSS Approver', 'OSS Approver Two'],
+  'org-pss': ['OSS Approver', 'OSS Approver Two'],
+  'org-dram': ['OSS Approver', 'OSS Approver Two'],
+  'org-smcs': ['SMCS Dean'],
+  'org-sbs': ['Dual Test'],
+  'org-cedir': ['CEDIR Head'],
+};

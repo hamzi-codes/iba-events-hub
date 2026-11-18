@@ -1,6 +1,7 @@
 import { mockEnabled } from '../config';
 import client from './client';
 import * as mock from './mock/mockBrowse';
+import * as mockForm from './mock/mockEvents';
 
 // Browse endpoints from Master Document 6.3. Only these calls, nothing else.
 // While mocks are on (config.js) the same functions answer from src/api/mock/mockBrowse.js.
@@ -37,4 +38,18 @@ export async function getOrganisationEvents(id, { when = 'upcoming' } = {}) {
   if (useMock()) return mock.getOrganisationEvents(id, { when });
   const { data } = await client.get(`/organisations/${id}/events`, { params: { when } });
   return asList(data, 'events');
+}
+
+// GET /venues -> active venues for the form: [{ id, name, location, capacity }]
+export async function getVenues() {
+  if (useMock()) return mockForm.getVenues();
+  const { data } = await client.get('/venues');
+  return asList(data, 'venues');
+}
+
+// GET /settings/event-types?category=school -> list of type names for that category
+export async function getEventTypes(category) {
+  if (useMock()) return mockForm.getEventTypes(category);
+  const { data } = await client.get('/settings/event-types', { params: { category } });
+  return asList(data, 'eventTypes');
 }

@@ -39,3 +39,12 @@ export const isPast = (endAt) => !isUpcoming(endAt);
 // Build a UTC ISO string from a date ("2026-11-24") and time ("17:00") picked in Pakistan time.
 export const toUtcIso = (dateString, timeString) =>
   dayjs.utc(`${dateString} ${timeString}`).subtract(PAKISTAN_OFFSET_MINUTES, 'minute').toISOString();
+
+// ---- helpers for the event form: date ("2026-11-24") and time ("17:00") as text ----
+// The form keeps the date and times as plain text in Pakistan time, and only turns them
+// into UTC (toUtcIso) when sending to the server.
+export const todayString = () => nowInPakistan().format('YYYY-MM-DD');
+export const toDateString = (iso) => inPakistan(iso).format('YYYY-MM-DD');
+export const toTimeString = (iso) => inPakistan(iso).format('HH:mm');
+export const formatDateString = (dateString) => dayjs.utc(dateString).format('D MMM YYYY');
+export const formatTimeString = (timeString) => dayjs.utc(`2000-01-01 ${timeString}`).format('h:mm A');

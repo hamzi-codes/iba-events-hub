@@ -1,6 +1,7 @@
 import { ApiError } from '../ApiError';
 import { getCurrentUser } from './mockAuth';
 import {
+  APPROVER_NAMES,
   CATEGORIES,
   ORG_LIST,
   canSeeEvent,
@@ -48,7 +49,13 @@ export async function getOrganisation(id) {
   await getCurrentUser();
   const organisation = findOrg(id);
   if (!organisation) throw notFound('organisation');
-  return { id: organisation.id, name: organisation.name, category: organisation.category, description: organisation.description };
+  const result = { id: organisation.id, name: organisation.name, category: organisation.category, description: organisation.description };
+  // Organisers, approvers and admins also get the approver names (Section 7.3, screen 12).
+  const user = await getCurrentUser();
+  if (user.roles.some((role) => ['organiser', 'approver', 'admin'].includes(role))) {
+    result.approvers = (APPROVER_NAMES[organisation.id] || []).map((fullName) => ({ fullName }));
+  }
+  return result;
 }
 
 // GET /organisations/:id/events?when=upcoming|past
