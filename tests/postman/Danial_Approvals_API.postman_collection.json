@@ -1,0 +1,1659 @@
+{
+  "info": {
+    "name": "Danial - Approvals API (Sprint 1)",
+    "description": "Section 6.5. Needs seed data and Ali's login + POST /events. Creates its own events. EVENT_ALREADY_STARTED and the approve-time VENUE_CONFLICT cannot be reached through the API (creation blocks them), so test those by editing the database, see TC-APR-05.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 - Login (saves tokens)",
+      "item": [
+        {
+          "name": "Login as student.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"studentToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as dss.organiser.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"organiserToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dss.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as oss.approver.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"approverToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"oss.approver.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as oss2.approver.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"approver2Token\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"oss2.approver.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as smcs.dean.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"deanToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"smcs.dean.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as dual.test@iba.edu.pk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"dualToken\", t); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dual.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 - Look up ids (organisations, venue)",
+      "item": [
+        {
+          "name": "Find Data Science Society id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"Data Science Society\"); pm.test(\"Data Science Society exists (run the seed script)\", () => pm.expect(o).to.exist); pm.environment.set(\"dssId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=society"
+          }
+        },
+        {
+          "name": "Find SMCS id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"SMCS\"); pm.test(\"SMCS exists\", () => pm.expect(o).to.exist); pm.environment.set(\"smcsId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=school"
+          }
+        },
+        {
+          "name": "Find SBS id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const o = pm.response.json().find(x => x.name === \"SBS\"); pm.test(\"SBS exists\", () => pm.expect(o).to.exist); pm.environment.set(\"sbsId\", o.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations?category=school"
+          }
+        },
+        {
+          "name": "Find Auditorium 1 id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json().find(x => x.name === \"Auditorium 1\"); pm.test(\"Auditorium 1 exists\", () => pm.expect(v).to.exist); pm.environment.set(\"venueId\", v.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/venues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Setup: organiser creates four PENDING events",
+      "item": [
+        {
+          "name": "Create event A (will be approved)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"evA\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssId}}\",\n  \"title\": \"Postman approve me\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Workshop\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create event B (will be rejected)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"evB\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssId}}\",\n  \"title\": \"Postman reject me\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Workshop\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create event C (changes requested)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"evC\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssId}}\",\n  \"title\": \"Postman change me\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Workshop\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create event D (wrong approver test)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"evD\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssId}}\",\n  \"title\": \"Postman other approver\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Workshop\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Access control",
+      "item": [
+        {
+          "name": "Queue without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        },
+        {
+          "name": "Queue as student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        },
+        {
+          "name": "Queue as organiser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        },
+        {
+          "name": "Approve as student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evA}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Approve as organiser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evA}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Pending queue (FR-APR-01, 02)",
+      "item": [
+        {
+          "name": "OSS approver sees the society events, oldest first",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Has total and events\", () => { pm.expect(b.total).to.eql(b.events.length); });",
+                  "pm.test(\"All four setup events are in the DSS queue\", () => [\"evA\", \"evB\", \"evC\", \"evD\"].forEach(k => pm.expect(b.events.map(e => e.id)).to.include(pm.environment.get(k))));",
+                  "pm.test(\"Oldest first\", () => { const t = b.events.map(e => e.createdAt); pm.expect(t).to.eql([...t].sort()); });",
+                  "pm.test(\"Only Pending\", () => b.events.forEach(e => pm.expect(e.status).to.eql(\"PENDING\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        },
+        {
+          "name": "Dean of SMCS does not see society events (routing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"DSS events are not in the SMCS queue\", () => [\"evA\", \"evB\", \"evC\", \"evD\"].forEach(k => pm.expect(pm.response.json().events.map(e => e.id)).to.not.include(pm.environment.get(k))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{deanToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Approve (FR-APR-04, 08, 09)",
+      "item": [
+        {
+          "name": "Dean cannot decide on a society event (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{deanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evD}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Approve event A with a comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const e = pm.response.json();",
+                  "pm.test(\"Status APPROVED\", () => pm.expect(e.status).to.eql(\"APPROVED\"));",
+                  "pm.test(\"History: submitted, then approved by an approver with the comment\", () => {",
+                  "  const h = e.history[e.history.length - 1];",
+                  "  pm.expect([h.fromStatus, h.toStatus, h.actorRole, h.comment]).to.eql([\"PENDING\", \"APPROVED\", \"approver\", \"Looks good\"]);",
+                  "  pm.expect(h.actor.fullName).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evA}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Looks good\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Second approver tries to decide A: first decision stands",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is ALREADY_DECIDED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ALREADY_DECIDED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approver2Token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evA}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"I disagree with this\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Approve A again",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is ALREADY_DECIDED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ALREADY_DECIDED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evA}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Student can now open event A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Is APPROVED\", () => pm.expect(pm.response.json().status).to.eql(\"APPROVED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{evA}}"
+          }
+        },
+        {
+          "name": "Event A is listed for students under the society",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"A is in the upcoming list\", () => pm.expect(pm.response.json().map(e => e.id)).to.include(pm.environment.get(\"evA\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/organisations/{{dssId}}/events?when=upcoming"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - Reject (FR-APR-05)",
+      "item": [
+        {
+          "name": "Reject B with 9 characters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"Field error on comment\", () => pm.expect(pm.response.json().error.fields).to.have.property(\"comment\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evB}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"123456789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reject B with no comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evB}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reject B with a non-text comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evB}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": {\n    \"$gt\": \"\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reject B with 10 characters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status REJECTED\", () => pm.expect(pm.response.json().status).to.eql(\"REJECTED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evB}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"1234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Rejection is final: approve B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is ALREADY_DECIDED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ALREADY_DECIDED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approver2Token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evB}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Student cannot see rejected event B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{evB}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 - Request changes (FR-APR-06)",
+      "item": [
+        {
+          "name": "Request changes with a short comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evC}}/request-changes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Request changes on C",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status CHANGES_REQUESTED\", () => pm.expect(pm.response.json().status).to.eql(\"CHANGES_REQUESTED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evC}}/request-changes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Please add the speaker details\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Student cannot see event C",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{evC}}"
+          }
+        },
+        {
+          "name": "Organiser sees the reviewer comment in the history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Last history entry has the comment\", () => { const h = pm.response.json().history; pm.expect(h[h.length - 1].comment).to.eql(\"Please add the speaker details\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{evC}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8 - Self-approval and bad ids",
+      "item": [
+        {
+          "name": "dual.test creates an SBS event",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const days = 40 + Math.floor(Math.random() * 600);",
+                  "const d = new Date(Date.now() + days * 86400000);",
+                  "const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+                  "pm.environment.set(\"evStart\", new Date(day + 4 * 3600000).toISOString());   // 9:00 AM Pakistan time",
+                  "pm.environment.set(\"evEnd\", new Date(day + 6 * 3600000).toISOString());     // 11:00 AM Pakistan time"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json(); pm.test(\"Event is PENDING\", () => pm.expect(e.status).to.eql(\"PENDING\")); pm.environment.set(\"evDual\", e.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{dualToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{sbsId}}\",\n  \"title\": \"Postman self approval\",\n  \"description\": \"Created by the Postman collection\",\n  \"eventType\": \"Other\",\n  \"startAt\": \"{{evStart}}\",\n  \"endAt\": \"{{evEnd}}\",\n  \"capacity\": 20,\n  \"registrationRequired\": false,\n  \"venueId\": \"{{venueId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "dual.test tries to approve own event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is SELF_APPROVAL_NOT_ALLOWED\", () => pm.expect(pm.response.json().error.code).to.eql(\"SELF_APPROVAL_NOT_ALLOWED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{dualToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{evDual}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Unknown event id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/000000000000000000000000/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Malformed event id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/abc/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9 - Decided events (FR-APR-10)",
+      "item": [
+        {
+          "name": "All decided (OSS approver)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const b = pm.response.json();",
+                  "const ids = b.map(e => e.id);",
+                  "pm.test(\"A, B and C are listed\", () => [\"evA\", \"evB\", \"evC\"].forEach(k => pm.expect(ids).to.include(pm.environment.get(k))));",
+                  "pm.test(\"Each row has a decision block\", () => b.forEach(e => { pm.expect([\"APPROVED\", \"REJECTED\", \"CHANGES_REQUESTED\"]).to.include(e.decision.status); pm.expect(e.decision.decidedAt).to.be.a(\"string\"); }));",
+                  "pm.test(\"Newest decision first\", () => { const t = b.map(e => e.decision.decidedAt); pm.expect(t).to.eql([...t].sort().reverse()); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided"
+          }
+        },
+        {
+          "name": "Filter decision=REJECTED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); pm.test(\"Only rejected, B included\", () => { b.forEach(e => pm.expect(e.decision.status).to.eql(\"REJECTED\")); pm.expect(b.map(e => e.id)).to.include(pm.environment.get(\"evB\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided?decision=REJECTED"
+          }
+        },
+        {
+          "name": "Filter by today's date",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10); pm.environment.set(\"today\", d);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided"
+          }
+        },
+        {
+          "name": "Date range that has nothing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Empty\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided?from=2020-01-01&to=2020-01-02"
+          }
+        },
+        {
+          "name": "Bad decision value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided?decision=MAYBE"
+          }
+        },
+        {
+          "name": "Bad date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided?from=garbage"
+          }
+        },
+        {
+          "name": "Dean sees none of the society decisions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Not the DSS events\", () => pm.expect(pm.response.json().map(e => e.id)).to.not.include(pm.environment.get(\"evA\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{deanToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/decided"
+          }
+        }
+      ]
+    }
+  ]
+}
