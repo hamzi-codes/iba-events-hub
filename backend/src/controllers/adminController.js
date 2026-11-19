@@ -153,6 +153,11 @@ async function describeOrganisations(orgs) {
     .sort({ fullName: 1 })
     .lean();
   const people = new Map(ids.map((id) => [String(id), { organiser: [], approver: [] }]));
+    const pendingRows = await Event.aggregate([
+    { $match: { organisationId: { $in: ids }, status: 'PENDING' } },
+    { $group: { _id: '$organisationId', n: { $sum: 1 } } },
+  ]);
+  const pendingBy = new Map(pendingRows.map((r) => [String(r._id), r.n]));
   users.forEach((u) =>
     u.affiliations.forEach((a) => {
       const bucket = people.get(String(a.organisationId));
@@ -169,6 +174,7 @@ async function describeOrganisations(orgs) {
       isActive: o.isActive,
       organiserCount: p.organiser.length,
       approverCount: p.approver.length,
+      pendingEventsCount: pendingBy.get(String(o._id)) || 0,
       approvers: p.approver,
       organisers: p.organiser,
       createdAt: o.createdAt.toISOString(),
