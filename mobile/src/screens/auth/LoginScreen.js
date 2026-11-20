@@ -25,6 +25,7 @@ export default function LoginScreen({ navigation, route }) {
   const passwordRef = useRef(null);
   const [email, setEmail] = useState(route?.params?.email || '');
   const verified = !!route?.params?.verified;
+  const created = !!route?.params?.created;
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
@@ -62,7 +63,15 @@ export default function LoginScreen({ navigation, route }) {
       <View style={styles.form} />
       <ErrorBanner
         tone="info"
-        message={verified && !formError ? 'Your email is verified. Log in to continue.' : null}
+        message={
+          formError
+            ? null
+            : verified
+              ? 'Your email is verified. Log in to continue.'
+              : created
+                ? 'Your account is ready. Log in to continue.'
+                : null
+        }        
         testID="login-verified"
       />
       <ErrorBanner message={formError} testID="login-error" />

@@ -41,9 +41,13 @@ export default function SignUpScreen({ navigation }) {
     };
     setSubmitting(true);
     try {
-      await signup(payload);
+      const result = await signup(payload);
       setSubmitting(false);
-      navigation.navigate('VerifyEmail', { email: payload.email });
+      if (result && result.verificationRequired === false) {
+        navigation.navigate('Login', { email: payload.email, created: true });
+      } else {
+        navigation.navigate('VerifyEmail', { email: payload.email });
+      }
     } catch (error) {
       setSubmitting(false);
       // Everything typed stays in the fields (NFR-REL-03).
