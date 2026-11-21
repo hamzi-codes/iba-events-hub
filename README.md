@@ -154,7 +154,7 @@ Manual test cases and results are in `docs/` (Excel file and PDF).
 | Member                 | Role                                                                                                        |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Ali Hamza              | Scrum Master. Backend foundation, Auth API, Events API with conflict check, seed script, deployment, Trello |
-| Danial Bokhari         | Backend: Browse, Approvals and Admin APIs, Postman tests for them, Trello                                   |
+| Daniyaal Bokhari       | Backend: Browse, Approvals and Admin APIs, Postman tests for them, Trello                                   |
 | Muhammad Umer          | Mobile app (all screens)                                                                                    |
 | Muhammad Usman Hussain | Documents and testing                                                                                       |
 
@@ -177,6 +177,7 @@ Manual test cases and results are in `docs/` (Excel file and PDF).
 - The deployed API runs with email verification switched off (`REQUIRE_EMAIL_VERIFICATION=false`, decision D6), because we have no verified email domain and free hosts restrict outgoing SMTP. The full verification flow works on a local server (`EMAIL_MODE=console`, code printed in the terminal). Logged in `docs/deviations.md`.
 - The venue lock that stops two simultaneous bookings is kept in server memory, so on a serverless host it protects each running instance only. Two requests that land on different instances at the same moment could both succeed. The approver's final conflict check before approval reduces the risk. A shared lock moves to Sprint 2.
 - Rate limiting covers code resend and failed logins only.
+- The Configuration screen (27) was not built; accepted domains and event types are edited through the API (`GET`/`PUT /api/v1/admin/settings`) or the seed script.
 
 ## Moves to Sprint 2
 
