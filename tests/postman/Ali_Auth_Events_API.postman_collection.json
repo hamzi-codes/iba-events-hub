@@ -1,0 +1,3178 @@
+{
+  "info": {
+    "name": "Ali - Auth and Events API (Sprint 1)",
+    "description": "Sections 6.2 and 6.4 plus the conflict rules of 5.10. Needs the seed data (Section 8) and Danial's /venues and /approvals endpoints. Run folder 0 first, then the others in order, with the Collection Runner. Set testPassword in the environment to your SEED_PASSWORD.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 - Setup and logins (run first)",
+      "item": [
+        {
+          "name": "Health check and test dates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"API is healthy\", () => pm.expect(pm.response.json().status).to.eql(\"ok\"));",
+                  "function pkt(days, h, m) {",
+                  "  const s = new Date(Date.now() + days * 864e5 + 5 * 36e5);",
+                  "  return new Date(Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate(), h - 5, m || 0)).toISOString();",
+                  "}",
+                  "const day = 120 + Math.floor(Math.random() * 240);",
+                  "const cv = pm.collectionVariables;",
+                  "cv.set('runId', String(Date.now()).slice(-6));",
+                  "cv.set('newEmail', 'pm.' + Date.now() + '@iba.edu.pk');",
+                  "cv.set('newEmail2', 'pm2.' + Date.now() + '@iba.edu.pk');",
+                  "cv.set('sA_start', pkt(day, 10, 0));     cv.set('sA_end', pkt(day, 12, 0));",
+                  "cv.set('sB_start', pkt(day + 1, 10, 0)); cv.set('sB_end', pkt(day + 1, 12, 0));",
+                  "cv.set('sC_start', pkt(day + 2, 10, 0)); cv.set('sC_end', pkt(day + 2, 12, 0));",
+                  "cv.set('sD_start', pkt(day + 3, 10, 0)); cv.set('sD_end', pkt(day + 3, 12, 0));",
+                  "cv.set('ov_start', pkt(day, 11, 59));    cv.set('ov_end', pkt(day, 13, 0));",
+                  "cv.set('b2b_start', pkt(day, 12, 0));    cv.set('b2b_end', pkt(day, 13, 0));",
+                  "cv.set('clash_start', pkt(day + 1, 11, 0)); cv.set('clash_end', pkt(day + 1, 13, 0));",
+                  "cv.set('past_start', pkt(-1, 10, 0));    cv.set('past_end', pkt(-1, 12, 0));",
+                  "cv.set('multi_start', pkt(day + 10, 10, 0)); cv.set('multi_end', pkt(day + 11, 10, 0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as student.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"studentToken\", t); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as dss.organiser.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dss.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"organiserToken\", t); });",
+                  "pm.test(\"Organisation id saved\", () => { const a = pm.response.json().user.affiliations; pm.expect(a.length).to.be.above(0); pm.collectionVariables.set(\"dssOrgId\", a[0].organisationId); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as multi.organiser.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"multi.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"organiser2Token\", t); });",
+                  "pm.test(\"Entrepreneurship Society id saved\", () => { const a = pm.response.json().user.affiliations.find(x => x.organisationName === \"Entrepreneurship Society\"); pm.expect(a).to.exist; pm.collectionVariables.set(\"esOrgId\", a.organisationId); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as smcs.organiser.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"smcs.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"smcsOrganiserToken\", t); });",
+                  "pm.test(\"SMCS id saved\", () => { const a = pm.response.json().user.affiliations; pm.collectionVariables.set(\"smcsOrgId\", a[0].organisationId); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as cedir.organiser.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cedir.organiser.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"cedirOrganiserToken\", t); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as oss.approver.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"oss.approver.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"approverToken\", t); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as admin.test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token saved\", () => { const t = pm.response.json().token; pm.expect(t).to.be.a(\"string\"); pm.environment.set(\"adminToken\", t); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Look up venue ids",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/venues"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const list = Array.isArray(pm.response.json()) ? pm.response.json() : pm.response.json().venues;",
+                  "const byName = n => (list.find(v => v.name === n) || {}).id;",
+                  "pm.test(\"Seeded venues found\", () => { pm.expect(byName(\"Auditorium 1\")).to.be.a(\"string\"); pm.expect(byName(\"Lab 3\")).to.be.a(\"string\"); pm.expect(byName(\"Lawn\")).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"venueAud\", byName(\"Auditorium 1\"));",
+                  "pm.collectionVariables.set(\"venueLab\", byName(\"Lab 3\"));",
+                  "pm.collectionVariables.set(\"venueLawn\", byName(\"Lawn\"));",
+                  "pm.collectionVariables.set(\"venueSem\", byName(\"Seminar Room 2\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Run this folder first. It saves the tokens, the organisation ids, the venue ids and a random far-future test day (so repeated runs do not clash)."
+    },
+    {
+      "name": "1 - Auth",
+      "item": [
+        {
+          "name": "Sign up (valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Has a message and the verificationRequired flag\", () => { const b = pm.response.json(); pm.expect(b.message).to.be.a(\"string\"); pm.expect(b.verificationRequired).to.be.a(\"boolean\"); pm.collectionVariables.set(\"verifyOn\", String(b.verificationRequired)); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login straight after sign up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const on = pm.collectionVariables.get('verifyOn') === 'true';",
+                  "if (on) {",
+                  "  pm.test('Login is blocked until the email is verified (403)', () => pm.response.to.have.status(403));",
+                  "  pm.test('Error code is EMAIL_NOT_VERIFIED', () => pm.expect(pm.response.json().error.code).to.eql('EMAIL_NOT_VERIFIED'));",
+                  "} else {",
+                  "  pm.test('Login works straight away (200)', () => pm.response.to.have.status(200));",
+                  "  pm.test('The account has only the student role', () => pm.expect(pm.response.json().user.roles).to.eql(['student']));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with role=admin in the body (role must be ignored)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"{{newEmail2}}\",\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Test1234\",\n  \"roles\": [\n    \"admin\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as that account: only student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail2}}\",\n  \"password\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const on = pm.collectionVariables.get('verifyOn') === 'true';",
+                  "if (on) {",
+                  "  pm.test('Login is blocked until the email is verified (403)', () => pm.response.to.have.status(403));",
+                  "  pm.test('Error code is EMAIL_NOT_VERIFIED', () => pm.expect(pm.response.json().error.code).to.eql('EMAIL_NOT_VERIFIED'));",
+                  "} else {",
+                  "  pm.test('Login works straight away (200)', () => pm.response.to.have.status(200));",
+                  "  pm.test('The account has only the student role', () => pm.expect(pm.response.json().user.roles).to.eql(['student']));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with an email that already exists",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"student.test@iba.edu.pk\",\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is EMAIL_TAKEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"EMAIL_TAKEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with a non-IBA email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"someone@gmail.com\",\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on email\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"email\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with a short password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"pm.short@iba.edu.pk\",\n  \"password\": \"Ab1\",\n  \"confirmPassword\": \"Ab1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on password\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with a letters-only password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"pm.letters@iba.edu.pk\",\n  \"password\": \"abcdefgh\",\n  \"confirmPassword\": \"abcdefgh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on password\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with a digits-only password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"pm.digits@iba.edu.pk\",\n  \"password\": \"12345678\",\n  \"confirmPassword\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on password\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with passwords that do not match",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": \"pm.mismatch@iba.edu.pk\",\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Other1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on confirmPassword\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"confirmPassword\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign up with the email sent as an object",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Postman Test\",\n  \"email\": {\n    \"$gt\": \"\"\n  },\n  \"password\": \"Test1234\",\n  \"confirmPassword\": \"Test1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify with a wrong code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verify-email",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail}}\",\n  \"code\": \"000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const on = pm.collectionVariables.get('verifyOn') === 'true';",
+                  "if (on) {",
+                  "  pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "  pm.test('Error code is INVALID_CODE', () => pm.expect(pm.response.json().error.code).to.eql('INVALID_CODE'));",
+                  "} else {",
+                  "  pm.test('Already verified, so the answer is 200', () => pm.response.to.have.status(200));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify with a code that is not 6 digits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verify-email",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail}}\",\n  \"code\": \"12\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on code\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"code\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resend code for an unknown email (generic answer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/resend-code",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody.pm@iba.edu.pk\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Does not reveal that the account is missing\", () => pm.expect(pm.response.json().message).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with a wrong password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));",
+                  "pm.collectionVariables.set(\"wrongPwMessage\", pm.response.json().error.message);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with an unknown email (same message)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody.pm@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));",
+                  "pm.test(\"Same message as a wrong password\", () => pm.expect(pm.response.json().error.message).to.eql(pm.collectionVariables.get(\"wrongPwMessage\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with email and password sent as objects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": {\n    \"$gt\": \"\"\n  },\n  \"password\": {\n    \"$gt\": \"\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (with token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"User object has id, roles and affiliations\", () => { const u = pm.response.json().user; pm.expect(u.id).to.be.a(\"string\"); pm.expect(u.roles).to.include(\"student\"); pm.expect(u.affiliations).to.be.an(\"array\"); });",
+                  "pm.test(\"No secrets in the response\", () => { const raw = pm.response.text(); pm.expect(raw).to.not.include(\"passwordHash\"); pm.expect(raw).to.not.include(\"verifyCodeHash\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me for an organiser (affiliations have names)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Affiliation has organisationName, category and type\", () => { const a = pm.response.json().user.affiliations[0]; pm.expect(a).to.have.all.keys(\"organisationId\", \"organisationName\", \"category\", \"type\"); pm.expect(a.type).to.eql(\"organiser\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me without a token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me with a garbage token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.headers.add({ key: \"Authorization\", value: \"Bearer abc.def.ghi\" });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/logout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - Events: create, validate, list",
+      "item": [
+        {
+          "name": "Student tries to create an event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} Student\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Organiser creates an event for another organisation (SMCS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{smcsOrgId}}\",\n  \"title\": \"PM {{runId}} Wrong org\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create event A (valid, Auditorium 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} A\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json();",
+                  "pm.test(\"Status is PENDING with one history entry\", () => { pm.expect(e.status).to.eql(\"PENDING\"); pm.expect(e.history.length).to.eql(1); });",
+                  "pm.test(\"Attendance is off by default\", () => pm.expect(e.attendanceEnabled).to.eql(false));",
+                  "pm.test(\"Event has organisation and venue names\", () => { pm.expect(e.organisationName).to.eql(\"Data Science Society\"); pm.expect(e.venue.name).to.eql(\"Auditorium 1\"); });",
+                  "pm.collectionVariables.set(\"eventA\", e.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty title",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on title\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"title\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Title of 101 characters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on title\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"title\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty description",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on description\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"description\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event type not allowed for the category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Thesis Defence\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on eventType\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"eventType\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "End before start",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_end}}\",\n  \"endAt\": \"{{sA_start}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on endAt\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"endAt\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start in the past",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{past_start}}\",\n  \"endAt\": \"{{past_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on startAt\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"startAt\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start and end on different days",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{multi_start}}\",\n  \"endAt\": \"{{multi_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on endAt\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"endAt\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity 0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 0,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on capacity\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"capacity\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity -1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": -1,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on capacity\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"capacity\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity 1.5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 1.5,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on capacity\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"capacity\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity as letters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": \"abc\",\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on capacity\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"capacity\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity above the venue capacity (301 in a 300 seat venue)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 301,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on capacity\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"capacity\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No venue and not online",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on venueId\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"venueId\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "registrationRequired missing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} X\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on registrationRequired\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"registrationRequired\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Title sent as an object",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": {\n    \"$gt\": \"\"\n  },\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capacity equal to the venue capacity is accepted (event B)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} B\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sB_start}}\",\n  \"endAt\": \"{{sB_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 300,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"eventB\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Guest Speaker Session without speaker details",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} Speaker\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Guest Speaker Session\",\n  \"startAt\": \"{{sC_start}}\",\n  \"endAt\": \"{{sC_end}}\",\n  \"venueId\": \"{{venueLawn}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on speakerName\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"speakerName\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Guest Speaker Session with speaker details (event C)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} C\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Guest Speaker Session\",\n  \"startAt\": \"{{sC_start}}\",\n  \"endAt\": \"{{sC_end}}\",\n  \"venueId\": \"{{venueLawn}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true,\n  \"speakerName\": \"Dr. Postman\",\n  \"speakerDesignation\": \"Test Engineer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Speaker saved\", () => pm.expect(pm.response.json().speakerName).to.eql(\"Dr. Postman\"));",
+                  "pm.collectionVariables.set(\"eventC\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thesis Defence without thesis details (SMCS organiser)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{smcsOrganiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{smcsOrgId}}\",\n  \"title\": \"PM {{runId}} Thesis\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Thesis Defence\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueSem}}\",\n  \"capacity\": 30,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on presenterName\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"presenterName\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Online event at the same time as A (no venue, no clash)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} Online\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true,\n  \"isOnline\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Online event has no venue\", () => { const e = pm.response.json(); pm.expect(e.isOnline).to.eql(true); pm.expect(e.venue).to.eql(null); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event with attendance switched on",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} Attendance\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sD_start}}\",\n  \"endAt\": \"{{sD_end}}\",\n  \"venueId\": \"{{venueLawn}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true,\n  \"attendanceEnabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"attendanceEnabled is true\", () => pm.expect(pm.response.json().attendanceEnabled).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My events (organiser)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/my/events"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Only my organisation events\", () => { const b = pm.response.json(); pm.expect(b.total).to.be.above(0); pm.expect(b.events.every(e => e.organisationId === pm.collectionVariables.get(\"dssOrgId\"))).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My events filtered by status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/my/events?status=PENDING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"All events are PENDING\", () => pm.expect(pm.response.json().events.every(e => e.status === \"PENDING\")).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My events as a student",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/my/events"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My events with an invalid status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/my/events?status=BOGUS"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 - Conflict detection",
+      "item": [
+        {
+          "name": "Same venue and time as A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Conflict with event A\", () => { const b = pm.response.json(); pm.expect(b.conflict).to.eql(true); pm.expect(b.clashingEvent.id).to.eql(pm.collectionVariables.get(\"eventA\")); pm.expect(b.clashingEvent.organisationName).to.eql(\"Data Science Society\"); pm.expect(b.clashingEvent.status).to.eql(\"PENDING\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Overlap by one minute is a conflict",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{ov_start}}&endAt={{ov_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Conflict\", () => pm.expect(pm.response.json().conflict).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Back-to-back is not a conflict",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{b2b_start}}&endAt={{b2b_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"No conflict\", () => pm.expect(pm.response.json().conflict).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Different venue, same time",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueLab}}&startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"No conflict\", () => pm.expect(pm.response.json().conflict).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluding the event itself",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_start}}&endAt={{sA_end}}&excludeEventId={{eventA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"No conflict\", () => pm.expect(pm.response.json().conflict).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing venueId",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "End before start",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_end}}&endAt={{sA_start}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error code is VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Student calls conflict-check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST a clashing event directly (same organisation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} Clash same org\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is VENUE_CONFLICT\", () => pm.expect(pm.response.json().error.code).to.eql(\"VENUE_CONFLICT\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST a clashing event from another organisation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiser2Token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{esOrgId}}\",\n  \"title\": \"PM {{runId}} Clash other org\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is VENUE_CONFLICT\", () => pm.expect(pm.response.json().error.code).to.eql(\"VENUE_CONFLICT\"));",
+                  "pm.test(\"Message names the clashing event and organisation\", () => { const m = pm.response.json().error.message; pm.expect(m).to.include(\"Data Science Society\"); pm.expect(m).to.match(/\\d{1,2}:\\d{2} (AM|PM)/); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 - Edit, resubmit and cancel",
+      "item": [
+        {
+          "name": "Edit a PENDING event is refused",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} A edited\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is INVALID_STATUS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_STATUS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approver requests changes on A (Danial's endpoint)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{eventA}}/request-changes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Please add more detail to the description.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status is CHANGES_REQUESTED\", () => pm.expect(pm.response.json().status).to.eql(\"CHANGES_REQUESTED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit A after changes were requested (same slot)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} A edited\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_start}}\",\n  \"endAt\": \"{{sA_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Title updated, status unchanged\", () => { const e = pm.response.json(); pm.expect(e.title).to.include(\"A edited\"); pm.expect(e.status).to.eql(\"CHANGES_REQUESTED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit A into the slot of event B (clash)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} A edited\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{clash_start}}\",\n  \"endAt\": \"{{clash_end}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is VENUE_CONFLICT\", () => pm.expect(pm.response.json().error.code).to.eql(\"VENUE_CONFLICT\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit A with end before start",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationId\": \"{{dssOrgId}}\",\n  \"title\": \"PM {{runId}} A edited\",\n  \"description\": \"Created by the Postman collection.\",\n  \"eventType\": \"Session\",\n  \"startAt\": \"{{sA_end}}\",\n  \"endAt\": \"{{sA_start}}\",\n  \"venueId\": \"{{venueAud}}\",\n  \"capacity\": 100,\n  \"registrationRequired\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on endAt\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"endAt\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Another organiser tries to resubmit A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cedirOrganiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/resubmit"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resubmit A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/resubmit"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Back to PENDING, history kept (3 entries)\", () => { const e = pm.response.json(); pm.expect(e.status).to.eql(\"PENDING\"); pm.expect(e.history.length).to.eql(3); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resubmit A again",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/resubmit"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is INVALID_STATUS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_STATUS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approver approves B (Danial's endpoint)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/approvals/{{eventB}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status is APPROVED\", () => pm.expect(pm.response.json().status).to.eql(\"APPROVED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel approved B without a reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventB}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on reason\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"reason\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel approved B with a short reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventB}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Field error on reason\", () => { const e = pm.response.json().error; pm.expect(e.code).to.eql(\"VALIDATION_ERROR\"); pm.expect(e.fields).to.have.property(\"reason\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel approved B with a proper reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventB}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The speaker is unavailable.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelled after approval, reason saved\", () => { const e = pm.response.json(); pm.expect(e.status).to.eql(\"CANCELLED\"); pm.expect(e.cancelledAfterApproval).to.eql(true); pm.expect(e.cancellationReason).to.eql(\"The speaker is unavailable.\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Another organiser tries to cancel A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cedirOrganiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error code is FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel pending A without a reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelled, not after approval\", () => { const e = pm.response.json(); pm.expect(e.status).to.eql(\"CANCELLED\"); pm.expect(e.cancelledAfterApproval).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel A again",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventA}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error code is INVALID_STATUS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_STATUS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The cancelled slot is free again",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/conflict-check?venueId={{venueAud}}&startAt={{sA_start}}&endAt={{sA_end}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"No conflict after cancelling\", () => pm.expect(pm.response.json().conflict).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cleanup: cancel the remaining test events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{organiserToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/my/events"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const open = pm.response.json().events.filter(e => e.title.startsWith('PM ') && ['PENDING', 'CHANGES_REQUESTED', 'APPROVED'].includes(e.status));",
+                  "open.forEach(e => pm.sendRequest({",
+                  "  url: pm.environment.get('baseUrl') + '/events/' + e.id + '/cancel',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + pm.environment.get('organiserToken') },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ reason: 'Postman cleanup after test run.' }) }",
+                  "}, () => {}));",
+                  "pm.test('Cleanup finished (' + open.length + ' events cancelled)', () => pm.expect(true).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Uses Danial's approvals endpoints to move events into CHANGES_REQUESTED and APPROVED."
+    },
+    {
+      "name": "Z - Account lockout (run last, or untick it in the Runner)",
+      "item": [
+        {
+          "name": "Wrong password 1 of 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong password 2 of 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong password 3 of 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong password 4 of 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error code is INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong password 5 of 5 locks the account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"Wrong1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 429\", () => pm.response.to.have.status(429));",
+                  "pm.test(\"Error code is ACCOUNT_LOCKED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ACCOUNT_LOCKED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Right password while locked is refused",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student2.test@iba.edu.pk\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 429\", () => pm.response.to.have.status(429));",
+                  "pm.test(\"Error code is ACCOUNT_LOCKED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ACCOUNT_LOCKED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "This locks student2.test@iba.edu.pk for 15 minutes. Afterwards run `npm run seed` in the backend folder to unlock it, or wait 15 minutes."
+    }
+  ]
+}
